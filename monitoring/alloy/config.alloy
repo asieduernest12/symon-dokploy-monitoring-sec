@@ -1,0 +1,29 @@
+// Alloy configuration for log collection and additional metrics
+
+// Log collection
+loki.source.file "varlogcontainers" {
+  targets = [
+    {__path__ = "/var/log/containers/*.log", "job" = "varlogcontainers"},
+  ]
+  forward_to = [loki.write.logs_service.receiver]
+}
+
+loki.source.file "varlogpods" {
+  targets = [
+    {__path__ = "/var/log/pods/**/*.log", "job" = "varlogpods"},
+  ]
+  forward_to = [loki.write.logs_service.receiver]
+}
+
+loki.source.file "systemd" {
+  targets = [
+    {__path__ = "/var/log/journal/**/*.log", "job" = "systemd"},
+  ]
+  forward_to = [loki.write.logs_service.receiver]
+}
+
+loki.write "logs_service" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

@@ -1,0 +1,138 @@
+version: '3.8'
+services:
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+      - '--enable-feature=remote-write-receiver'
+      - '--web.external-url=http://74.208.197.64/prometheus/'
+    cpus: ${CPUS_MAX:-0.4}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`74.208.197.64`) && PathPrefix(`/prometheus`)"
+      - "traefik.http.routers.prometheus.middlewares=prometheus-stripprefix,crowdsec-auth,security-headers,rate-limit"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.middlewares.prometheus-stripprefix.stripprefix.prefixes=/prometheus"
+
+  grafana:
+    image: grafana/grafana-oss
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    cpus: ${CPUS_MAX:-0.4}
+    depends_on:
+      - prometheus
+      - loki
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`74.208.197.64`) && PathPrefix(`/grafana`)"
+      - "traefik.http.routers.grafana.middlewares=grafana-stripprefix,crowdsec-auth,security-headers,rate-limit"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.grafana-stripprefix.stripprefix.prefixes=/grafana"
+      - "traefik.http.middlewares.crowdsec-auth.forwardauth.address=http://crowdsec-bouncer-traefik:8080/api/v1/forwardAuth"
+      - "traefik.http.middlewares.security-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.security-headers.headers.stsseconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.rate-limit.ratelimit.burst=100"
+      - "traefik.http.middlewares.rate-limit.ratelimit.average=50"
+
+  loki:
+    image: grafana/loki:2.9.2
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/config.yml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    cpus: ${CPUS_MAX:-0.4}
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.0
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    cpus: ${CPUS_MAX:-0.4}
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:0.54.1
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    cpus: ${CPUS_MAX:-0.4}
+
+  alloy:
+    image: grafana/alloy:v1.12.1
+    volumes:
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy
+      - /var/log:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/tmp/alloy
+    cpus: ${CPUS_MAX:-0.4}
+
+  crowdsec:
+    image: crowdsecurity/crowdsec:v1.7.0
+    volumes:
+      - crowdsec_data:/var/lib/crowdsec/data
+      - crowdsec_config:/etc/crowdsec
+      - ./security/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - /var/log:/var/log:ro
+    environment:
+      - COLLECTIONS=crowdsecurity/traefik
+    ports:
+      - "8080:8080"  # LAPI port
+    cpus: ${CPUS_MAX:-0.4}
+
+  crowdsec-bouncer-traefik:
+    image: fbonalair/traefik-crowdsec-bouncer:latest
+    ports:
+      - "8081:8080"
+    environment:
+      - CROWDSEC_BOUNCER_API_KEY=${CROWDSEC_API_KEY}
+      - CROWDSEC_AGENT_HOST=crowdsec:8080
+    cpus: ${CPUS_MAX:-0.4}
+    depends_on:
+      - crowdsec
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  crowdsec_data:
+  crowdsec_config:
