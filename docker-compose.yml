@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   prometheus:
     image: prom/prometheus:v3.1.0
@@ -37,6 +36,8 @@ services:
     depends_on:
       - prometheus
       - loki
+    networks:
+        - default_network
 
   loki:
     image: grafana/loki:2.9.2
@@ -126,3 +127,6 @@ volumes:
   loki_data:
   crowdsec_data:
   crowdsec_config:
+
+networks:
+  default_network: null
