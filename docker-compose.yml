@@ -114,6 +114,9 @@ services:
     environment:
       - COLLECTIONS=crowdsecurity/traefik
       - DISABLE_IPV6=true
+      - DISABLE_ONLINE_API=true
+      - CROWDSEC_API_KEY=${CROWDSEC_API_KEY}
+      - BOUNCER_KEY_crowdsec-bouncer-traefik=${CROWDSEC_API_KEY}
     # ports:
     #   - "127.0.0.1:6060:6060"
     #   - "127.0.0.1:8080:8080"
