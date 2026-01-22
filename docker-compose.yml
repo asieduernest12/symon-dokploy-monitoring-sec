@@ -106,9 +106,8 @@ services:
   crowdsec:
     image: crowdsecurity/crowdsec:v1.7.0
     volumes:
-      - crowdsec_data:/var/lib/crowdsec/data
-      - crowdsec_config:/etc/crowdsec
-      - ./security/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - ./monitoring/crowdsec/data:/var/lib/crowdsec/data
+      - ./monitoring/crowdsec/config:/etc/crowdsec:rw
       - /var/log:/var/log:ro
       - crowdsec_geodata:/staging/var/lib/crowdsec/data/
     environment:
