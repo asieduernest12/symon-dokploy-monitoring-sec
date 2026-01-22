@@ -17,6 +17,7 @@ services:
       - '--enable-feature=remote-write-receiver'
       - '--web.external-url=http://74.208.197.64/prometheus/'
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`74.208.197.64`) && PathPrefix(`/prometheus`)"
@@ -37,6 +38,7 @@ services:
       - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
     depends_on:
       - prometheus
       - loki
@@ -63,6 +65,7 @@ services:
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
 
   node-exporter:
     image: prom/node-exporter:v1.9.0
@@ -78,6 +81,7 @@ services:
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
 
   cadvisor:
     image: ghcr.io/google/cadvisor:0.54.1
@@ -92,6 +96,7 @@ services:
     devices:
       - /dev/kmsg
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
 
   alloy:
     image: grafana/alloy:v1.12.1
@@ -105,6 +110,7 @@ services:
       - --server.http.listen-addr=0.0.0.0:12345
       - --storage.path=/tmp/alloy
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
 
   crowdsec:
     image: crowdsecurity/crowdsec:v1.7.0
@@ -118,6 +124,7 @@ services:
     # ports:
     #   - "8080:8080"  # LAPI port
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
 
   crowdsec-bouncer-traefik:
     image: fbonalair/traefik-crowdsec-bouncer:latest
@@ -127,6 +134,7 @@ services:
       - CROWDSEC_BOUNCER_API_KEY=${CROWDSEC_API_KEY}
       - CROWDSEC_AGENT_HOST=crowdsec:8080
     cpus: ${CPUS_MAX:-0.4}
+    restart: unless-stopped
     depends_on:
       - crowdsec
 
