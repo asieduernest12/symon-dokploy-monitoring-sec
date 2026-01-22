@@ -1,22 +1,23 @@
 services:
   prometheus:
     image: prom/prometheus:v3.1.0
-    # ports:
-    #   - "9090:9090"
+    restart: unless-stopped
+    #ports:
+    # - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ./prometheus/data:/prometheus/data # Persistent storage for Prometheus data
+      # - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Mount your Prometheus config
+      # - caddy_logs:/var/log/caddy
+    depends_on:
+      - node-exporter
+      - cadvisor # Only if using cadvisor
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=15d' # Adjust as needed
+      - '--web.enable-remote-write-receiver'
       - '--enable-feature=remote-write-receiver'
-      - '--web.external-url=http://74.208.197.64/prometheus/'
-    cpus: ${CPUS_MAX:-0.4}
-    restart: unless-stopped
+    cpus: ${DC_CPU:-0.60}
+    mem_limit: ${MEM_LIMIT:-300mb}
 
   grafana:
     image: grafana/grafana-oss
