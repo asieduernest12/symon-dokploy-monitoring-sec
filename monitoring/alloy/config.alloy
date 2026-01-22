@@ -43,9 +43,9 @@ local.file_match "logsgz" {
 }
 
 
-discovery.docker "linux" {
-  host = "unix:///var/run/docker.sock"
-}
+#discovery.docker "linux" {
+#  host = "unix:///var/run/docker.sock"
+#}
 
 
 discovery.relabel "logs_integrations_docker" {
@@ -73,12 +73,12 @@ discovery.relabel "logs_integrations_docker" {
   }
 }
 
-loki.source.docker "default" {
-  host       = "unix:///var/run/docker.sock"
-  targets    = discovery.docker.linux.targets
-  relabel_rules = discovery.relabel.logs_integrations_docker.rules
-  forward_to = [loki.process.add_geo_tags.receiver]
-}
+#loki.source.docker "default" {
+#  host       = "unix:///var/run/docker.sock"
+#  targets    = discovery.docker.linux.targets
+#  relabel_rules = discovery.relabel.logs_integrations_docker.rules
+#  forward_to = [loki.process.add_geo_tags.receiver]
+#}
 
 
 loki.source.file "tmpfiles" {
