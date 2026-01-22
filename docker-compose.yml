@@ -2,8 +2,8 @@ version: '3.8'
 services:
   prometheus:
     image: prom/prometheus:v3.1.0
-    ports:
-      - "9090:9090"
+    # ports:
+    #   - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -26,8 +26,8 @@ services:
 
   grafana:
     image: grafana/grafana-oss
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
@@ -56,8 +56,8 @@ services:
 
   loki:
     image: grafana/loki:2.9.2
-    ports:
-      - "3100:3100"
+    # ports:
+    #   - "3100:3100"
     volumes:
       - ./monitoring/loki/config.yml:/etc/loki/local-config.yaml
       - loki_data:/loki
@@ -66,8 +66,8 @@ services:
 
   node-exporter:
     image: prom/node-exporter:v1.9.0
-    ports:
-      - "9100:9100"
+    # ports:
+    #   - "9100:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -81,8 +81,8 @@ services:
 
   cadvisor:
     image: ghcr.io/google/cadvisor:0.54.1
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -115,14 +115,14 @@ services:
       - /var/log:/var/log:ro
     environment:
       - COLLECTIONS=crowdsecurity/traefik
-    ports:
-      - "8080:8080"  # LAPI port
+    # ports:
+    #   - "8080:8080"  # LAPI port
     cpus: ${CPUS_MAX:-0.4}
 
   crowdsec-bouncer-traefik:
     image: fbonalair/traefik-crowdsec-bouncer:latest
-    ports:
-      - "8081:8080"
+    # ports:
+    #   - "8081:8080"
     environment:
       - CROWDSEC_BOUNCER_API_KEY=${CROWDSEC_API_KEY}
       - CROWDSEC_AGENT_HOST=crowdsec:8080
