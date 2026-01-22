@@ -18,12 +18,6 @@ services:
       - '--web.external-url=http://74.208.197.64/prometheus/'
     cpus: ${CPUS_MAX:-0.4}
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`74.208.197.64`) && PathPrefix(`/prometheus`)"
-      - "traefik.http.routers.prometheus.middlewares=prometheus-stripprefix,crowdsec-auth,security-headers,rate-limit"
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-      - "traefik.http.middlewares.prometheus-stripprefix.stripprefix.prefixes=/prometheus"
 
   grafana:
     image: grafana/grafana-oss
@@ -42,19 +36,6 @@ services:
     depends_on:
       - prometheus
       - loki
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`74.208.197.64`) && PathPrefix(`/grafana`)"
-      - "traefik.http.routers.grafana.middlewares=grafana-stripprefix,crowdsec-auth,security-headers,rate-limit"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.http.middlewares.grafana-stripprefix.stripprefix.prefixes=/grafana"
-      - "traefik.http.middlewares.crowdsec-auth.forwardauth.address=http://crowdsec-bouncer-traefik:8080/api/v1/forwardAuth"
-      - "traefik.http.middlewares.security-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.security-headers.headers.stsseconds=31536000"
-      - "traefik.http.middlewares.security-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.security-headers.headers.stspreload=true"
-      - "traefik.http.middlewares.rate-limit.ratelimit.burst=100"
-      - "traefik.http.middlewares.rate-limit.ratelimit.average=50"
 
   loki:
     image: grafana/loki:2.9.2
