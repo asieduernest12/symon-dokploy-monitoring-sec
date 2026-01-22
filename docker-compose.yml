@@ -104,7 +104,7 @@ services:
     restart: unless-stopped
 
   crowdsec:
-    image: crowdsecurity/crowdsec:v1.7.5
+    image: crowdsecurity/crowdsec:v1.7.4
     volumes:
       - ./monitoring/crowdsec/data:/var/lib/crowdsec/data
       - ./monitoring/crowdsec/config:/etc/crowdsec:rw

@@ -15,6 +15,7 @@ prometheus.scrape "prometheus" {
     { "__address__" = "cadvisor:8080", "job" = "cadvisor" },
     { "__address__" = "crowdsec:6060", "job" = "crowdsec" },
     { "__address__" = "alloy:12345", "job" = "alloy" },
+    { "__address__" = "traefik:8082", "job" = "traefik" },
   ]
   scrape_interval = "15s"
   forward_to      = [prometheus.remote_write.demo.receiver]
@@ -47,7 +48,7 @@ discovery.docker "linux" {
   host = "unix:///var/run/docker.sock"
   filter {
       name = "name"
-      values = ["dokploy-traefik"]
+      values = ["dokploy-traefik", "traefik"]
     }
 }
 
