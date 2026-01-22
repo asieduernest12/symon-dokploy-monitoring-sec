@@ -1,0 +1,49 @@
+# Traefik Dynamic Configuration for Monitoring and Security Integration
+# This configuration enables Prometheus metrics and CrowdSec integration
+
+http:
+  # Enable Prometheus metrics endpoint
+  routers:
+    metrics:
+      rule: Path(`/metrics`)
+      service: prometheus@internal
+      middlewares:
+        - security-headers
+      entryPoints:
+        - traefik
+
+  # CrowdSec bouncer middleware for security protection
+  middlewares:
+    crowdsec-bouncer:
+      forwardAuth:
+        address: http://crowdsec-bouncer-traefik:8080/api/v1/forwardAuth
+        trustForwardHeader: true
+        authResponseHeaders:
+          - X-Forwarded-User
+
+    # Security headers middleware for protected endpoints
+    security-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+
+# Metrics configuration
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    entryPoint: traefik
+    manualRouting: false
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
