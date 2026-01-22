@@ -85,13 +85,20 @@ services:
     image: grafana/alloy:v1.12.1
     volumes:
       - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy
+      - ./monitoring/alloy/data:/var/lib/alloy
       - /var/log:/var/log:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - crowdsec_geodata:/usr/share/GeoIP:ro
+    environment:
+      - ALLOY_CONFIG_PATH=/etc/alloy/config.yaml
+      - ALLOY_LOKI_URL=http://loki:3100
+      - ALLOY_PROMETHEUS_URL=http://prometheus:9090
     command:
       - run
-      - /etc/alloy/config.alloy
       - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/tmp/alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.ui-path-prefix=${ALLOY_UI_PATH_PREFIX:-/}
+      - /etc/alloy/config.alloy
     cpus: ${CPUS_MAX:-0.4}
     restart: unless-stopped
 
@@ -102,10 +109,13 @@ services:
       - crowdsec_config:/etc/crowdsec
       - ./security/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
       - /var/log:/var/log:ro
+      - crowdsec_geodata:/staging/var/lib/crowdsec/data/
     environment:
       - COLLECTIONS=crowdsecurity/traefik
+      - DISABLE_IPV6=true
     # ports:
-    #   - "8080:8080"  # LAPI port
+    #   - "127.0.0.1:6060:6060"
+    #   - "127.0.0.1:8080:8080"
     cpus: ${CPUS_MAX:-0.4}
     restart: unless-stopped
 
@@ -127,3 +137,4 @@ volumes:
   loki_data:
   crowdsec_data:
   crowdsec_config:
+  crowdsec_geodata:
