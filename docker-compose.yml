@@ -110,6 +110,7 @@ services:
       - ./monitoring/crowdsec/config:/etc/crowdsec:rw
       - /var/log:/var/log:ro
       - crowdsec_geodata:/staging/var/lib/crowdsec/data/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - COLLECTIONS=crowdsecurity/traefik
       - DISABLE_IPV6=true

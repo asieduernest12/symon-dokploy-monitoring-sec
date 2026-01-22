@@ -1,0 +1,18 @@
+type: leaky
+name: mstilkerich/bind9-refused
+description: "Act on queries / zone transfers denied by bind9 policy"
+debug: false
+filter: "evt.Meta.log_type == 'bind9_denied'"
+groupby: evt.Meta.source_ip
+capacity: 5
+leakspeed: 10s
+blackhole: 1m
+labels:
+  service: domain
+  classification:
+    - attack.T1590.002
+  spoofable: 0
+  confidence: 3
+  behavior: "generic:scan"
+  label: "Domain transfer attempt"
+  remediation: true

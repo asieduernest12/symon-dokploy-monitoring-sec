@@ -1,0 +1,68 @@
+onsuccess: next_stage
+name: crowdsecurity/mssql-logs
+description: "Parse mssql logs"
+filter: "evt.Parsed.Channel == 'Application' && (evt.Parsed.Source == 'MSSQLSERVER' || evt.Parsed.Source startsWith 'MSSQL$') && evt.Parsed.EventID == '18456'"
+nodes:
+  - grok:
+      pattern: "Reason: Password did not match that for the login provided\\."
+      expression: XMLGetNodeValue(evt.Line.Raw, "/Event/EventData[1]/Data[2]")
+    nodes:
+      - grok:
+          pattern: "\\[CLIENT: %{IP:source_ip}\\]"
+          expression: XMLGetNodeValue(evt.Line.Raw, "/Event/EventData[1]/Data[3]")
+          statics:
+            - meta: source_ip
+              expression: evt.Parsed.source_ip
+    statics:
+      - meta: subtype
+        value: bad_password
+  - grok:
+      pattern: "Reason: Could not find a login matching the name provided\\."
+      expression: XMLGetNodeValue(evt.Line.Raw, "/Event/EventData[1]/Data[2]")
+    nodes:
+      - grok:
+          pattern: "\\[CLIENT: %{IP:source_ip}\\]"
+          expression: XMLGetNodeValue(evt.Line.Raw, "/Event/EventData[1]/Data[3]")
+          statics:
+            - meta: source_ip
+              expression: evt.Parsed.source_ip
+    statics:
+      - meta: subtype
+        value: bad_user
+statics:
+  - meta: log_type
+    value: mssql_failed_auth
+  - meta: user
+    expression: XMLGetNodeValue(evt.Line.Raw, "/Event/EventData[1]/Data[1]")
+---
+onsuccess: next_stage
+name: crowdsecurity/mssql-text-logs
+description: "Parse mssql logs"
+filter: "evt.Parsed.program == 'mssql'"
+pattern_syntax:
+  DATE_YMD: "%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}"
+nodes:
+  - grok:
+      pattern: "%{DATE_YMD:date} %{TIME:time} Logon.*Login failed for user '%{NOTDQUOTE:user}'. Reason: %{GREEDYDATA:reason_message}. \\[CLIENT: %{IPORHOST:source_ip}\\]"
+      apply_on: message
+    onsuccess: next_stage
+    nodes:
+      - filter: "evt.Parsed.reason_message == 'Password did not match that for the login provided'"
+        onsuccess: next_stage
+        statics:
+          - meta: subtype
+            value: bad_password
+      - filter: "evt.Parsed.reason_message == 'Could not find a login matching the name provided'"
+        onsuccess: next_stage
+        statics:
+          - meta: subtype
+            value: bad_user
+statics:
+    - meta: service
+      value: mssql
+    - meta: log_type
+      value: mssql_failed_auth
+    - meta: source_ip
+      expression: "evt.Parsed.source_ip"
+    - target: evt.StrTime
+      expression: "evt.Parsed.date + ' ' + evt.Parsed.time"

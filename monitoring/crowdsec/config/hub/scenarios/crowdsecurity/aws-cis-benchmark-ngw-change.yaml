@@ -1,0 +1,23 @@
+type: trigger
+name: crowdsecurity/aws-cis-benchmark-ngw-change
+description: "Detect AWS Network Gateway change"
+filter: |
+     evt.Meta.log_type == 'aws-cloudtrail' &&
+     (
+     evt.Meta.event_name == "CreateCustomerGateway" ||
+     evt.Meta.event_name == "DeleteCustomerGateway" ||
+     evt.Meta.event_name == "AttachInternetGateway" ||
+     evt.Meta.event_name == "CreateInternetGateway" ||
+     evt.Meta.event_name == "DeleteInternetGateway" ||
+     evt.Meta.event_name == "DetachInternetGateway"
+     )
+labels:
+     confidence: 3
+     spoofable: 0
+     classification:
+          - attack.T1578
+     behavior: "cloud:audit"
+     label: "AWS Network Gateway change"
+     service: aws
+     cti: false
+     remediation: false

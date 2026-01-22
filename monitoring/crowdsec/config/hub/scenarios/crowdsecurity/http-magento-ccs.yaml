@@ -1,0 +1,18 @@
+type: leaky
+name: crowdsecurity/http-magento-ccs
+debug: false
+description: "Detect credit card stuffing from a single IP"
+filter: "evt.Meta.log_type == 'PAYMENT_FAILED'"
+groupby: evt.Meta.source_ip
+capacity: 3
+leakspeed: 30s
+blackhole: 5m
+labels:
+  remediation: true
+  classification:
+    - attack.T1110.004
+  confidence: 2
+  spoofable: 0
+  service: magento
+  behavior: "ecommerce:fraud"
+  label: "Magento Credit Card Stuffing"

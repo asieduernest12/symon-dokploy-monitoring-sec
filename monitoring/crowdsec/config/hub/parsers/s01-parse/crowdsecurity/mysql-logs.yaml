@@ -1,0 +1,22 @@
+onsuccess: next_stage
+name: crowdsecurity/mysql-logs
+description: "Parse MySQL logs"
+filter: "evt.Parsed.program == 'mysql'"
+pattern_syntax:
+  MYSQL_ACCESS_DENIED: "Access denied for user '%{DATA:user}'@'%{IP:source_ip}' \\(using password: %{WORD:using_password}\\)" 
+nodes:
+  - grok:
+      pattern: "%{TIMESTAMP_ISO8601:time} %{NUMBER} \\[Note\\]( \\[%{DATA:err_code}\\] \\[%{DATA:subsystem}\\])? %{MYSQL_ACCESS_DENIED}"
+      apply_on: message
+  - grok:
+      pattern: "%{TIMESTAMP_ISO8601:time}.*%{NUMBER} Connect.*%{MYSQL_ACCESS_DENIED}"
+      apply_on: message
+statics:
+  - meta: log_type
+    value: mysql_failed_auth
+  - meta: source_ip
+    expression: "evt.Parsed.source_ip"
+  - target: evt.StrTime
+    expression: evt.Parsed.time
+  - meta: user
+    expression: "evt.Parsed.user"

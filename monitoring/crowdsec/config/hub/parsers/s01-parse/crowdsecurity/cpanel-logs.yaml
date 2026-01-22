@@ -1,0 +1,77 @@
+onsuccess: next_stage
+filter: "evt.Parsed.program == 'cpanel'"
+name: crowdsecurity/cpanel-logs
+description: "Parse Cpanel logs"
+pattern_syntax:
+  NO_DOUBLE_QUOTE: '[^"]+'
+  CPANEL_HEADER: \[%{DATA:date} \+[0-9]+\] info \[(cpaneld|whostmgrd)\] %{IP:remote_addr} - %{NOTSPACE:username} "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:http_version}"
+nodes:
+  - grok: 
+      pattern: '%{CPANEL_HEADER} FAILED LOGIN cpaneld: brute force attempt \(user %{DATA}\) has locked out IP %{IP}'
+      apply_on: message
+      statics:
+        - meta: log_type
+          value: auth_bf_attempt
+        - target: evt.StrTime
+          expression: evt.Parsed.date
+  - grok: 
+      pattern: '%{CPANEL_HEADER} FAILED LOGIN cpaneld: brute force attempt \(user %{DATA:target_user}\) has locked out IP %{IP}'
+      apply_on: message
+      statics:
+        - meta: log_type
+          value: auth_bf_log
+        - target: evt.StrTime
+          expression: evt.Parsed.date
+  - grok: 
+      pattern: '%{CPANEL_HEADER} FAILED LOGIN cpaneld: invalid cpanel user %{DATA:target_user}'
+      apply_on: message
+      statics:
+        - meta: log_type
+          value: auth_bf_log
+        - target: evt.StrTime
+          expression: evt.Parsed.date
+  - grok: 
+      pattern: '%{CPANEL_HEADER} FAILED LOGIN cpaneld: %{DATA:target_user} login is not permitted to cpaneld'
+      apply_on: message
+      statics:
+        - meta: log_type
+          value: auth_bf_log
+        - target: evt.StrTime
+          expression: evt.Parsed.date
+  - grok: 
+      pattern: '%{CPANEL_HEADER} FAILED LOGIN whostmgrd: login attempt to whm by a non-reseller/root'
+      apply_on: message
+      statics:
+        - meta: log_type
+          value: auth_bf_log
+        - target: evt.StrTime
+          expression: evt.Parsed.date
+  - grok: 
+      pattern: '%{CPANEL_HEADER} FAILED LOGIN whostmgrd: user password incorrect'
+      apply_on: message
+      statics:
+        - meta: log_type
+          value: auth_bf_log
+        - target: evt.StrTime
+          expression: evt.Parsed.date
+  - grok: # see https://docs.cpanel.net/knowledge-base/cpanel-product/the-cpanel-log-files/
+      pattern: '%{IP:remote_addr} - %{NOTSPACE:username} \[%{DATE}:%{TIME} %{ISO8601_TIMEZONE}\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:http_version}" %{INT:status} %{INT:request_body_length} "%{NOTSPACE:http_referer}" "%{NO_DOUBLE_QUOTE:http_user_agent}" "%{NO_DOUBLE_QUOTE:auth_method}" "%{NO_DOUBLE_QUOTE:x_forwarded_for}" %{NUMBER:server_port}'
+      apply_on: message
+      statics:
+        - meta: log_type
+          value: http_access-log
+statics:
+  - meta: service
+    value: http
+  - meta: source_ip
+    expression: "evt.Parsed.remote_addr"
+  - meta: http_path
+    expression: "evt.Parsed.request"
+  - meta: http_verb
+    expression: "evt.Parsed.verb"
+  - meta: http_user_agent
+    expression: "evt.Parsed.http_user_agent"
+  - meta: http_status
+    expression: "evt.Parsed.status"
+  - meta: username
+    expression: "evt.Parsed.username"

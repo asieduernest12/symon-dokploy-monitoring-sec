@@ -1,0 +1,21 @@
+onsuccess: next_stage
+filter: "evt.Parsed.program == 'tcpdump'"
+name: crowdsecurity/tcpdump-logs
+#debug: true
+description: "Parse tcpdump raw logs"
+grok:
+  name: "TCPDUMP_OUTPUT"
+  apply_on: message
+statics:
+    - meta: service
+      value: tcp
+    - meta: log_type
+      value: tcp_syn
+    - meta: source_ip
+      expression: "evt.Parsed.source_ip"
+    - meta: dest_ip
+      expression: "evt.Parsed.dest_ip"
+    - meta: dest_port
+      expression: "evt.Parsed.dest_port"
+    - parsed: "new_connection"
+      expression: "evt.Parsed.tcpflags contains 'S' ? 'true' : 'false'"

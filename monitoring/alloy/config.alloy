@@ -45,6 +45,10 @@ local.file_match "logsgz" {
 
 discovery.docker "linux" {
   host = "unix:///var/run/docker.sock"
+  filter {
+      name = "name"
+      values = ["dokploy-traefik"]
+    }
 }
 
 

@@ -1,0 +1,41 @@
+# loging bruteforce
+type: leaky
+name: baudneo/zoneminder-bf
+description: "Detect ZoneMinder bruteforce"
+filter: "evt.Meta.log_subtype == 'zm_bad_password'"
+groupby: "evt.Meta.source_ip"
+capacity: 4
+leakspeed: "10s"
+blackhole: 1m
+labels:
+  service: zoneminder
+  type: bruteforce
+  spoofable: 0
+  confidence: 3
+  remediation: true
+  classification:
+    - attack.T1110
+  behavior: "http:bruteforce"
+  label: "Zoneminder bruteforce"
+---
+# user enum
+type: leaky
+name: baudneo/zoneminder-bf
+description: "Detect ZoneMinder user enumeration"
+filter: "evt.Meta.log_subtype == 'zm_bad_user'"
+groupby: "evt.Meta.source_ip"
+distinct: "evt.Meta.username"
+capacity: 4
+leakspeed: "10s"
+blackhole: 1m
+labels:
+  service: zoneminder
+  type: bruteforce
+  spoofable: 0
+  confidence: 3
+  remediation: true
+  classification:
+    - attack.T1589
+    - attack.T1110
+  behavior: "http:bruteforce"
+  label: "Zoneminder user enumeration"

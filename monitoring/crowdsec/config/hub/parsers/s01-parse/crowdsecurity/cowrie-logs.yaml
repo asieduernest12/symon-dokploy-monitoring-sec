@@ -1,0 +1,20 @@
+onsuccess: next_stage
+name: cowrie-logs
+description: "Parse cowrie honeypots logs"
+filter: "evt.Parsed.program == 'cowrie'"
+grok:
+  name: "COWRIE_NEW_CO"
+  apply_on: message
+statics:
+    - meta: service
+      value: telnet
+    - meta: log_type
+      value: telnet_new_session
+    - meta: source_ip
+      expression: "evt.Parsed.source_ip"
+    - meta: dest_ip
+      expression: "evt.Parsed.dest_ip"
+    - meta: dest_port
+      expression: "evt.Parsed.dest_port"
+    - parsed: "telnet_session"
+      expression: "evt.Parsed.telnet_session"

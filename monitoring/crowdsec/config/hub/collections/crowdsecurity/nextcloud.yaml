@@ -1,0 +1,12 @@
+---
+parsers:
+  - crowdsecurity/nextcloud-logs
+  - crowdsecurity/nextcloud-whitelist
+scenarios:
+  - crowdsecurity/nextcloud-bf
+description: "Nextcloud support : parser and brute-force detection"
+author: crowdsecurity
+tags:
+  - linux
+  - bruteforce
+  - nextcloud

@@ -1,0 +1,18 @@
+# mailu-admin bruteforce
+type: trigger
+# debug: true
+name: mwinters-stuff/mailu-admin-bf
+description: "Detect mailu admin bruteforce"
+filter: evt.Meta.log_type == 'mailu_admin_auth_attempt'
+groupby: evt.Meta.source_ip
+blackhole: 5m
+# reprocess: true
+labels:
+  service: http
+  classification:
+    - attack.T1110.001
+  spoofable: 0
+  confidence: 3
+  behavior: "http:bruteforce"
+  label: "Mailu web admin authentication attempt"
+  remediation: true

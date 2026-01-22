@@ -1,0 +1,19 @@
+# emby bruteforce
+type: leaky
+name: LePresidente/emby-bf
+description: "Detect emby bruteforce"
+filter: "evt.Meta.log_type == 'emby_failed_auth'"
+leakspeed: 1m
+capacity: 5
+groupby: evt.Meta.source_ip
+blackhole: 5m
+reprocess: true
+labels:
+  service: emby
+  behavior: "http:bruteforce"
+  classification:
+    - attack.T1110
+  spoofable: 0
+  confidence: 3
+  label: "Emby Bruteforce"
+  remediation: true

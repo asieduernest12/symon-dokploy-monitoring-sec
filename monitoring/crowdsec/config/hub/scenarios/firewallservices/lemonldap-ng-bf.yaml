@@ -1,0 +1,43 @@
+# Lemonldap::NG brutforce
+type: leaky
+#debug: true
+name: firewallservices/lemonldap-ng-bf
+description: "Detect Lemonldap::NG bruteforce"
+filter: evt.Meta.service == 'llng' and evt.Meta.log_type == 'llng_auth_fail'
+leakspeed: 30s
+capacity: 5
+groupby: evt.Meta.source_ip
+blackhole: 1m
+reprocess: true
+labels:
+  service: ldap
+  confidence: 3
+  spoofable: 0
+  classification:
+    - attack.T1110
+  behavior: "ldap:bruteforce"
+  label: "LemonLDAP Bruteforce"
+  remediation: true
+
+---
+# Lemonldap::NG user enumeration
+type: leaky
+#debug: true
+name: firewallservices/lemonldap-ng-user-enum
+description: "Detect Lemonldap::NG user enum bruteforce"
+filter: evt.Meta.service == 'llng' and evt.Meta.log_type == 'llng_auth_fail'
+groupby: evt.Meta.source_ip
+distinct: evt.Meta.user
+leakspeed: 2m
+capacity: 5
+blackhole: 1m
+labels:
+  service: ldap
+  confidence: 3
+  spoofable: 0
+  classification:
+    - attack.T1110
+    - attack.T1595
+  behavior: "ldap:bruteforce"
+  label: "LemonLDAP User Enum Bruteforce"
+  remediation: true

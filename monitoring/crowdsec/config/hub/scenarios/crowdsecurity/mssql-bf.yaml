@@ -1,0 +1,19 @@
+# mysql bruteforce
+type: leaky
+#debug: true
+name: crowdsecurity/mssql-bf
+description: "Detect mssql bruteforce"
+filter: evt.Meta.log_type == 'mssql_failed_auth'
+leakspeed: "10s"
+capacity: 5
+groupby: evt.Meta.source_ip
+blackhole: 5m
+labels:
+  remediation: true
+  classification:
+    - attack.T1110
+  behavior: "database:bruteforce"
+  label: "MSSQL Bruteforce"
+  spoofable: 0
+  confidence: 3
+  service: mssql

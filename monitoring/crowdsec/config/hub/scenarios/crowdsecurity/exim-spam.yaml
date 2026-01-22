@@ -1,0 +1,16 @@
+type: leaky
+name: crowdsecurity/exim-spam
+description: "Detect spam on Exim"
+#debug: true
+filter: "evt.Meta.log_type == 'spam-attempt' && evt.Meta.service == 'exim'"
+groupby: evt.Meta.source_ip
+capacity: 3
+leakspeed: "360s"
+blackhole: 5m
+labels:
+  confidence: 3
+  spoofable: 0
+  behavior: "smtp:spam"
+  label: "Exim Spam"
+  remediation: true
+  service: smtp

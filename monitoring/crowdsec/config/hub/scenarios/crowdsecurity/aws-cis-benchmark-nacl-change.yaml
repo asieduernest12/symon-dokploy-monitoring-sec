@@ -1,0 +1,23 @@
+type: trigger
+name: crowdsecurity/aws-cis-benchmark-nacl-change
+description: "Detect AWS NACL change"
+filter: |
+     evt.Meta.log_type == 'aws-cloudtrail' &&
+     (
+     evt.Meta.event_name == "CreateNetworkAcl" ||
+     evt.Meta.event_name == "CreateNetworkAclEntry" ||
+     evt.Meta.event_name == "DeleteNetworkAcl" ||
+     evt.Meta.event_name == "DeleteNetworkAclEntry" ||
+     evt.Meta.event_name == "ReplaceNetworkAclEntry" ||
+     evt.Meta.event_name == "ReplaceNetworkAclAssociation"
+     )
+labels:
+     confidence: 3
+     spoofable: 0
+     classification:
+          - attack.T1578
+     behavior: "cloud:audit"
+     label: "AWS NACL change"
+     service: aws
+     cti: false
+     remediation: false

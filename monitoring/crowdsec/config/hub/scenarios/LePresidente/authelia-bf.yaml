@@ -1,0 +1,40 @@
+# authelia BF scan
+name: LePresidente/authelia-bf
+description: "Detect authelia bruteforce"
+filter: "evt.Meta.service == 'authelia' && evt.Meta.log_type == 'auth_failed'"
+#debug: true
+type: leaky
+groupby: evt.Meta.source_ip
+leakspeed: "20s"
+capacity: 5
+blackhole: 1m
+labels:
+  service: authelia
+  behavior: "http:bruteforce"
+  spoofable: 0
+  confidence: 3
+  classification:
+    - attack.T1110
+  label: "Authelia Bruteforce"
+  remediation: true
+---
+# authelia user-enum
+type: leaky
+name: LePresidente/authelia-bf_user-enum
+description: "Detect authelia user enum bruteforce"
+filter: "evt.Meta.service == 'authelia' && evt.Meta.log_type == 'auth_failed'"
+groupby: evt.Meta.source_ip
+distinct: evt.Meta.user
+leakspeed: 10s
+capacity: 5
+blackhole: 1m
+labels:
+  service: authelia
+  behavior: "http:bruteforce"
+  spoofable: 0
+  confidence: 3
+  classification:
+    - attack.T1589
+    - attack.T1110
+  label: "Authelia User Enumeration"
+  remediation: true

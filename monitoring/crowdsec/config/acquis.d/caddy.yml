@@ -1,0 +1,3 @@
+filename: /var/log/caddy/*.log
+labels:
+  type: caddy

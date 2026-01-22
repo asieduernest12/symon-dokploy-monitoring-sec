@@ -1,0 +1,19 @@
+type: leaky
+name: corvese/apache-guacamole_user_enum
+description: "Detect Apache Guacamole user enum bruteforce"
+filter: evt.Meta.log_type == 'apache-guacamole_failed_auth'
+groupby: evt.Meta.source_ip
+distinct: evt.Meta.target_user
+leakspeed: 10s
+capacity: 5
+blackhole: 1m
+labels:
+  service: apache-guacamole
+  confidence: 3
+  spoofable: 0
+  classification:
+    - attack.T1589
+    - attack.T1110
+  behavior: "http:bruteforce"
+  label: "Apache Guacamole User Enumeration"
+  remediation: true

@@ -1,0 +1,32 @@
+filter: evt.Parsed.program == 'keycloak'
+onsuccess: next_stage
+name: inherent-io/keycloak-logs
+description: "Parse keycloak logs"
+pattern_syntax:
+  KEYCLOAK_DATETIME: "[0-9]+-[0-9]+-[0-9]+ [0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}"
+  KEYCLOAK_LOG_LEVEL: "(DEBUG|WARN|ERROR|INFO)"
+  KEYCLOAK_LOG_LINE: '^%{KEYCLOAK_DATETIME:datetime} %{KEYCLOAK_LOG_LEVEL:log_level}\s+\[org.*\]\s+\(executor-thread-\d+\)\s+%{GREEDYDATA:parsed_message}'
+nodes:
+  - grok:
+      name: "KEYCLOAK_LOG_LINE"
+      apply_on: message
+    nodes:
+      - filter: ParseKV(evt.Parsed.parsed_message, evt.Unmarshaled, "keycloak") in ["", nil]
+        statics:
+          - meta: log_type
+            expression: trimSuffix(evt.Unmarshaled.keycloak.type, ",")
+          - meta: error
+            expression: trimSuffix(evt.Unmarshaled.keycloak.error ?? "", ",")
+          - meta: source_ip
+            expression: trimSuffix(evt.Unmarshaled.keycloak.ipAddress, ",")
+          - meta: username
+            expression: trimSuffix(evt.Unmarshaled.keycloak.username, ",")
+statics:
+  - meta: service
+    value: keycloak
+  - target: evt.StrTime
+    expression: evt.Parsed.datetime
+  - meta: log_level
+    expression: evt.Parsed.log_level
+  - target: evt.StrTimeFormat
+    value: "2006-01-02 15:04:05,999999999"
