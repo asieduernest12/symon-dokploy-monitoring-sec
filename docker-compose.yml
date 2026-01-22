@@ -5,7 +5,7 @@ services:
     #ports:
     # - "9090:9090"
     volumes:
-      - ./prometheus/data:/prometheus/data # Persistent storage for Prometheus data
+      - ./monitoring/prometheus/data:/prometheus/data # Persistent storage for Prometheus data
       # - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Mount your Prometheus config
       # - caddy_logs:/var/log/caddy
     depends_on:
