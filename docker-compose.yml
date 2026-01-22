@@ -37,7 +37,7 @@ services:
       - prometheus
       - loki
     networks:
-        - default_network
+        - default
 
   loki:
     image: grafana/loki:2.9.2
@@ -127,6 +127,3 @@ volumes:
   loki_data:
   crowdsec_data:
   crowdsec_config:
-
-networks:
-  default_network: null
