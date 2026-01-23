@@ -141,7 +141,7 @@ services:
     volumes:
       - ${DOKPLOY_VOL_ROOT:-.}/monitoring/crowdsec/data:/var/lib/crowdsec/data
       - ${DOKPLOY_VOL_ROOT:-.}/monitoring/crowdsec/config:/etc/crowdsec:rw
-      - /etc/dokploy/traefik/access.log:/var/log/traefic/access.log:ro
+      - /etc/dokploy/traefik/dynamic/access.log:/var/log/traefic/access.log:ro
       - crowdsec_geodata:/staging/var/lib/crowdsec/data/
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
