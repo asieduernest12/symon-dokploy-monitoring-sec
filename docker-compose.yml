@@ -5,7 +5,7 @@ services:
     #ports:
     # - "9090:9090"
     volumes:
-      - ./monitoring/prometheus/data:/prometheus/data:rw # Persistent storage for Prometheus data
+      - ${DOKPLOY_VOL_ROOT:-.}/monitoring/prometheus/data:/prometheus/data:rw # Persistent storage for Prometheus data
       # - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Mount your Prometheus config
       # - caddy_logs:/var/log/caddy
     depends_on:
@@ -31,7 +31,7 @@ services:
     #   - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ${DOKPLOY_VOL_ROOT:-.}/monitoring/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_SECURITY_ADMIN_USER=admin
@@ -57,7 +57,7 @@ services:
     # ports:
     #   - "3100:3100"
     volumes:
-      - ./monitoring/loki/config.yml:/etc/loki/local-config.yaml
+      - ${DOKPLOY_VOL_ROOT:-.}/monitoring/loki/config.yml:/etc/loki/local-config.yaml
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     healthcheck:
@@ -109,8 +109,8 @@ services:
   alloy:
     image: grafana/alloy:v1.12.1
     volumes:
-      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy
-      - ./monitoring/alloy/data:/var/lib/alloy
+      - ${DOKPLOY_VOL_ROOT:-.}/monitoring/alloy/config.alloy:/etc/alloy/config.alloy
+      - ${DOKPLOY_VOL_ROOT:-.}/monitoring/alloy/data:/var/lib/alloy
       - /var/log:/var/log:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - crowdsec_geodata:/usr/share/GeoIP:ro
@@ -139,8 +139,8 @@ services:
   crowdsec:
     image: crowdsecurity/crowdsec:v1.7.4
     volumes:
-      - ./monitoring/crowdsec/data:/var/lib/crowdsec/data
-      - ./monitoring/crowdsec/config:/etc/crowdsec:rw
+      - ${DOKPLOY_VOL_ROOT:-.}/monitoring/crowdsec/data:/var/lib/crowdsec/data
+      - ${DOKPLOY_VOL_ROOT:-.}/monitoring/crowdsec/config:/etc/crowdsec:rw
       - /var/log:/var/log:ro
       - crowdsec_geodata:/staging/var/lib/crowdsec/data/
       - /var/run/docker.sock:/var/run/docker.sock:ro
