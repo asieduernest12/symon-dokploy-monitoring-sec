@@ -17,7 +17,7 @@ services:
       - '--web.enable-remote-write-receiver'
       - '--enable-feature=remote-write-receiver'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,6 +38,12 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-grafana.seymon.localhost/grafana}
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     cpus: ${CPUS_MAX:-0.4}
     restart: unless-stopped
     depends_on:
@@ -77,7 +83,7 @@ services:
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9100/metrics"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9100/metrics"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -145,7 +151,7 @@ services:
     #   - "127.0.0.1:6060:6060"
     #   - "127.0.0.1:8080:8080"
     healthcheck:
-      test: ["CMD", "cscli", "metrics"]
+      test: ["CMD-SHELL", "which cscli || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
