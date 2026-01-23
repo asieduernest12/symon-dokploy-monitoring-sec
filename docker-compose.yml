@@ -5,7 +5,7 @@ services:
     #ports:
     # - "9090:9090"
     volumes:
-      - ./monitoring/prometheus/data:/prometheus/data # Persistent storage for Prometheus data
+      - prometheus_data:/prometheus/data # Persistent storage for Prometheus data
       # - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Mount your Prometheus config
       # - caddy_logs:/var/log/caddy
     depends_on:
@@ -61,7 +61,7 @@ services:
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3100/ready"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3100/ready"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -110,7 +110,7 @@ services:
     image: grafana/alloy:v1.12.1
     volumes:
       - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy
-      - ./monitoring/alloy/data:/var/lib/alloy
+      - alloy_data:/var/lib/alloy
       - /var/log:/var/log:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - crowdsec_geodata:/usr/share/GeoIP:ro
@@ -125,7 +125,7 @@ services:
       - --server.http.ui-path-prefix=${ALLOY_UI_PATH_PREFIX:-/}
       - /etc/alloy/config.alloy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:12345/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:12345/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -136,7 +136,7 @@ services:
   crowdsec:
     image: crowdsecurity/crowdsec:v1.7.4
     volumes:
-      - ./monitoring/crowdsec/data:/var/lib/crowdsec/data
+      - crowdsec_data:/var/lib/crowdsec/data
       - ./monitoring/crowdsec/config:/etc/crowdsec:rw
       - /var/log:/var/log:ro
       - crowdsec_geodata:/staging/var/lib/crowdsec/data/
