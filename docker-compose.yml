@@ -178,3 +178,4 @@ volumes:
   crowdsec_data:
   crowdsec_config:
   crowdsec_geodata:
+  alloy_data:
